@@ -1,0 +1,25 @@
+CPU Info
+--------
+
+4 x  Six-Core AMD Opteron(tm) Processor 8431 (24 cores)
+
+zsh» for i in ` seq 0 3`;  cat /sys/devices/system/cpu/cpu0/cache/index$i/size
+64K
+64K
+512K
+5118K
+
+OS
+--
+
+zsh» uname -a
+Linux teik 2.6.32-5-amd64 #1 SMP Fri Dec 10 15:35:08 UTC 2010 x86_64 GNU/Linux
+
+Compiler
+--------
+
+zsh» gcc --version
+gcc (Debian 4.4.5-8) 4.4.5
+Copyright (C) 2010 Free Software Foundation, Inc.
+This is free software; see the source for copying conditions.  There is NO
+warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
