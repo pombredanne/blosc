@@ -117,6 +117,34 @@ def show_plot(plots, yaxis, legends, gtitle, xmax=None):
     else:
         show()
 
+def plot_threads_vs_speed(values):
+    nthreads = values[0]
+    nt = range(1, nthreads+1)
+    data = values[1]
+    max_comp   = [max(data[i][1]) for i in nt]
+    max_decomp = [max(data[i][2]) for i in nt]
+
+    xlabel('Number of threads')
+    ylabel('Speed (MB/s)')
+    title("Number of Threads vs. Maximum Speed" \
+        +" (%(size).1f MB, %(elsize)d bytes, %(sbits)d bits)" % data )
+
+    plot(nt, max_comp, color='blue', label='Compression')
+    plot(nt, max_decomp, color='orange', label='Decompression')
+
+    def plot_base_speed(mean, message, color):
+        plot_ = axhline(mean, linewidth=3, linestyle='-.', color=color,
+                label=message)
+
+    mean = sum(data["memcpyw"]) / nthreads
+    message = "memcpy (write to memory)"
+    plot_base_speed(mean, message, 'blue')
+    mean = sum(data["memcpyr"]) / nthreads
+    message = "memcpy (read from memory)"
+    plot_base_speed(mean, message, 'orange')
+
+    legend(loc='best')
+
 if __name__ == '__main__':
 
     from optparse import OptionParser
