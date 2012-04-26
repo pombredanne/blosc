@@ -20,6 +20,39 @@ markers= [ 's', 'o', 'v', '^', '+', 'x', '>', '<', '.', ',' ]
 markersize = 8
 
 def get_values(filename):
+    """ Parse the output file.
+
+    Parameters
+    ----------
+    filename : str
+        the file to parse
+
+    Returns
+    -------
+    values : tuple length 2
+        a tuple consisting of the parsed values
+    values[0] : int
+        the total number of threads used
+    values[1] : dict
+        the 'data'
+
+    Notes
+    -----
+
+    The 'data', values[1], is arranged as follows.
+    For each value of threads there is a tuple of length three with three
+    lists, the compression ratios, the compression speeds and the decompression
+    speeds. So, for example to obtain the results from using 23 threads, you
+    would use:
+
+    >>> (ratios, comp_speed, decomp_speed) = values[1][23]
+
+    In addition, values[1] contains the entries 'size', 'elsize', 'sbits',
+    'memcpyw' and 'memcpyr'. These are the size of the working set, the size
+    of the used datatype, the number of significant bits, and the measured
+    memcopy read and write speeds for each number of threads.
+
+    """
     f = open(filename)
     values = {"memcpyw": [], "memcpyr": []}
 
