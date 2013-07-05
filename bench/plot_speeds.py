@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 """Script for plotting the results of the 'suite' benchmark.
 Invoke without parameters for usage hints.
 
