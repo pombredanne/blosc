@@ -60,6 +60,55 @@ def get_values(filename):
     return nthreads, values
 
 
+def make_plot(thread_range, values, speed, gtitle):
+    """ Create a plot
+
+    thread_range: sequence
+        the threads to display
+    values: dict mappint ints to 3x10 tuples
+        the data from the benchmark
+    speed: chr
+        'c' for compression, anything else for decompression
+    gtitle: string
+        the title for the final plot
+    """
+
+    plots = []
+    legends = []
+
+    for nt in thread_range:
+        #print "Values for %s threads --> %s" % (nt, values[nt])
+        (ratios, speedw, speedr) = values[nt]
+        #plot_ = semilogx(ratios, speed, linewidth=2)
+
+        if speed == 'c':
+            speed = speedw
+        else:
+            speed = speedr
+        plot_ = plot(ratios, speed, linewidth=2)
+        plots.append(plot_)
+        nmarker = nt
+        if nt >= len(markers):
+            nmarker = nt%len(markers)
+        setp(plot_, marker=markers[nmarker], markersize=markersize,
+             linewidth=linewidth)
+        legends.append("%d threads" % nt)
+
+
+    # Add memcpy lines
+    if speed == 'c':
+        mean = sum(values["memcpyw"]) / nthreads
+        message = "memcpy (write to memory)"
+    else:
+        mean = sum(values["memcpyr"]) / nthreads
+        message = "memcpy (read from memory)"
+    plot_ = axhline(mean, linewidth=3, linestyle='-.', color='black')
+    text(4.0, mean+50, message)
+    plots.append(plot_)
+    show_plot(plots, yaxis, legends, gtitle, xmax=int(options.xmax) if
+            options.xmax else None)
+
+
 def show_plot(plots, yaxis, legends, gtitle, xmax=None):
     xlabel('Compresssion ratio')
     ylabel('Speed (MB/s)')
@@ -147,8 +196,11 @@ if __name__ == '__main__':
     cspeed = options.cspeed
     dspeed = options.dspeed
 
-    plots = []
-    legends = []
+    if cspeed:
+        speed = 'c'
+    else:
+        speed = 'd'
+
     nthreads, values = get_values(filename)
     #print "Values:", values
 
@@ -164,34 +216,6 @@ if __name__ == '__main__':
 
     gtitle = plot_title
 
-    for nt in thread_range:
-        #print "Values for %s threads --> %s" % (nt, values[nt])
-        (ratios, speedw, speedr) = values[nt]
-        if cspeed:
-            speed = speedw
-        else:
-            speed = speedr
-        #plot_ = semilogx(ratios, speed, linewidth=2)
-        plot_ = plot(ratios, speed, linewidth=2)
-        plots.append(plot_)
-        nmarker = nt
-        if nt >= len(markers):
-            nmarker = nt%len(markers)
-        setp(plot_, marker=markers[nmarker], markersize=markersize,
-             linewidth=linewidth)
-        legends.append("%d threads" % nt)
 
-    # Add memcpy lines
-    if cspeed:
-        mean = sum(values["memcpyw"]) / nthreads
-        message = "memcpy (write to memory)"
-    else:
-        mean = sum(values["memcpyr"]) / nthreads
-        message = "memcpy (read from memory)"
-    plot_ = axhline(mean, linewidth=3, linestyle='-.', color='black')
-    text(4.0, mean+50, message)
-    plots.append(plot_)
-    show_plot(plots, yaxis, legends, gtitle, xmax=int(options.xmax) if
-            options.xmax else None)
-
+    make_plot(thread_range, values, speed, gtitle)
 
