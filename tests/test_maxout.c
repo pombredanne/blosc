@@ -1,10 +1,10 @@
 /*********************************************************************
-  Blosc - Blocked Suffling and Compression Library
+  Blosc - Blocked Shuffling and Compression Library
 
   Unit tests for basic features in Blosc.
 
   Creation date: 2010-06-07
-  Author: Francesc Alted <faltet@gmail.com>
+  Author: Francesc Alted <francesc@blosc.org>
 
   See LICENSES/BLOSC.txt for details about copyright and rights to use.
 **********************************************************************/
@@ -32,6 +32,7 @@ static char *test_maxout_less() {
 
   return 0;
 }
+
 
 /* Check maxout with maxout == size */
 static char *test_maxout_equal() {
@@ -63,49 +64,21 @@ static char *test_maxout_great() {
   return 0;
 }
 
-static char * test_shuffle()
-{
-  int sizes[] = {7, 64 * 3, 7*256, 500, 8000, 100000, 702713};
-  int types[] = {1, 2, 3, 4, 5, 6, 7, 8, 16};
-  int i, j, k;
-  for (i = 0; i < sizeof(sizes) / sizeof(sizes[0]); i++) {
-    for (j = 0; j < sizeof(types) / sizeof(types[0]); j++) {
-      int n = sizes[i];
-      int t = types[j];
-      char * d = malloc(t * n);
-      char * d2 = malloc(t * n);
-      char * o = malloc(t * n + BLOSC_MAX_OVERHEAD);
-      for (k = 0; k < n; k++) {
-        d[k] = rand();
-      }
-      blosc_compress(5, 1, t, t * n, d, o, t * n + BLOSC_MAX_OVERHEAD);
-      blosc_decompress(o, d2, t * n);
-      int ok = 1;
-      for (k = 0; ok&& k < n; k++) {
-        ok = (d[k] == d2[k]);
-      }
-      free(d);
-      free(d2);
-      free(o);
-      mu_assert("ERROR: multi size test failed", ok);
-    }
-  }
-
-  return 0;
-}
 
 static char *all_tests() {
   mu_run_test(test_maxout_less);
   mu_run_test(test_maxout_equal);
   mu_run_test(test_maxout_great);
-  mu_run_test(test_shuffle);
+
   return 0;
 }
 
+#define BUFFER_ALIGN_SIZE   32
+
 int main(int argc, char **argv) {
-  size_t i;
   int32_t *_src;
   char *result;
+  size_t i;
 
   printf("STARTING TESTS for %s", argv[0]);
 
@@ -113,13 +86,13 @@ int main(int argc, char **argv) {
   blosc_set_nthreads(1);
 
   /* Initialize buffers */
-  src = malloc(size);
-  srccpy = malloc(size);
-  dest = malloc(size+16);
-  dest2 = malloc(size);
+  src = blosc_test_malloc(BUFFER_ALIGN_SIZE, size);
+  srccpy = blosc_test_malloc(BUFFER_ALIGN_SIZE, size);
+  dest = blosc_test_malloc(BUFFER_ALIGN_SIZE, size + 16);
+  dest2 = blosc_test_malloc(BUFFER_ALIGN_SIZE, size);
   _src = (int32_t *)src;
   for (i=0; i < (size/4); i++) {
-    _src[i] = i;
+    _src[i] = (int32_t)i;
   }
   memcpy(srccpy, src, size);
 
@@ -133,7 +106,11 @@ int main(int argc, char **argv) {
   }
   printf("\tTests run: %d\n", tests_run);
 
-  free(src); free(srccpy); free(dest); free(dest2);
+  blosc_test_free(src);
+  blosc_test_free(srccpy);
+  blosc_test_free(dest);
+  blosc_test_free(dest2);
+
   blosc_destroy();
 
   return result != 0;

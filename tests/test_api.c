@@ -1,10 +1,10 @@
 /*********************************************************************
-  Blosc - Blocked Suffling and Compression Library
+  Blosc - Blocked Shuffling and Compression Library
 
   Unit tests for Blosc API.
 
   Creation date: 2010-06-07
-  Author: Francesc Alted <faltet@gmail.com>
+  Author: Francesc Alted <francesc@blosc.org>
 
   See LICENSES/BLOSC.txt for details about copyright and rights to use.
 **********************************************************************/
@@ -51,7 +51,16 @@ static char *test_cbuffer_versions() {
 
   blosc_cbuffer_versions(dest, &version_, &versionlz_);
   mu_assert("ERROR: version incorrect", version_ == BLOSC_VERSION_FORMAT);
-  mu_assert("ERROR: versionlz incorrect", versionlz_ == BLOSCLZ_VERSION_FORMAT);
+  mu_assert("ERROR: versionlz incorrect", versionlz_ == BLOSC_BLOSCLZ_VERSION_FORMAT);
+  return 0;
+}
+
+
+static char *test_cbuffer_complib() {
+  char *complib;
+
+  complib = blosc_cbuffer_complib(dest);
+  mu_assert("ERROR: complib incorrect", strcmp(complib, "BloscLZ") == 0);
   return 0;
 }
 
@@ -60,8 +69,11 @@ static char *all_tests() {
   mu_run_test(test_cbuffer_sizes);
   mu_run_test(test_cbuffer_metainfo);
   mu_run_test(test_cbuffer_versions);
+  mu_run_test(test_cbuffer_complib);
   return 0;
 }
+
+#define BUFFER_ALIGN_SIZE   8
 
 int main(int argc, char **argv) {
   char *result;
@@ -72,10 +84,10 @@ int main(int argc, char **argv) {
   blosc_set_nthreads(1);
 
   /* Initialize buffers */
-  src = malloc(size);
-  srccpy = malloc(size);
-  dest = malloc(size);
-  dest2 = malloc(size);
+  src = blosc_test_malloc(BUFFER_ALIGN_SIZE, size);
+  srccpy = blosc_test_malloc(BUFFER_ALIGN_SIZE, size);
+  dest = blosc_test_malloc(BUFFER_ALIGN_SIZE, size);
+  dest2 = blosc_test_malloc(BUFFER_ALIGN_SIZE, size);
   memset(src, 0, size);
   memcpy(srccpy, src, size);
 
@@ -95,7 +107,11 @@ int main(int argc, char **argv) {
   }
   printf("\tTests run: %d\n", tests_run);
 
-  free(src); free(srccpy); free(dest); free(dest2);
+  blosc_test_free(src);
+  blosc_test_free(srccpy);
+  blosc_test_free(dest);
+  blosc_test_free(dest2);
+
   blosc_destroy();
 
   return result != 0;
